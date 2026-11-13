@@ -1,0 +1,93 @@
+<template id="prediction-content">
+  <header class="document-head">
+    <p class="caption">Эндрю Траск · Грокаем глубокое обучение · Глава 3</p>
+    <h1 class="serif">Прямое распространение</h1>
+    <p class="deck">Как нейросеть превращает входные данные в прогноз</p>
+  </header>
+  <div class="takeaway"><svg class="icon" aria-hidden="true"><use href="#book-icon"/></svg><div><h2>Главная мысль</h2><p>Прямой проход — это вычисление прогноза при заданных весах. Каждый вход умножается на свой вес. Из этих вкладов получается выход, который можно передать дальше по сети.</p></div></div>
+  <section class="topic-section" id="topic-forward"><header><h2 class="serif">От одного входа к нескольким</h2></header>
+    <p>В простейшем случае прогноз равен произведению входа и веса. Когда входов несколько, каждый даёт свой вклад. Их сумма называется скалярным произведением входов и весов. Три входа в примере — три признака одного наблюдения.</p>
+    <div class="equation" aria-label="Прогноз равен сумме произведений входов на веса">ŷ = x₁w₁ + x₂w₂ + x₃w₃</div>
+    <div class="code-example" data-code-title="Один вход и несколько входов" data-result="2.0&#10;4.5"><pre><code>x = 4
+w = 0.5
+print(x * w)
+
+inputs = (4, 3, 2)
+weights = (0.5, 1.0, -0.25)
+prediction = sum(
+    x * w for x, w in zip(inputs, weights)
+)
+print(prediction)</code></pre></div>
+    <p>Второй прогноз складывается из <strong>2 + 3 − 0,5 = 4,5</strong>. Отрицательный вес у третьего признака уменьшает сумму. В этом примере веса мы задали вручную.</p>
+  </section>
+  <section class="topic-section" id="topic-outputs"><header><h2 class="serif">Несколько выходов и слоёв</h2></header>
+    <p>Чтобы получить несколько выходов из одного входа, можно умножить его на несколько разных весов. Если входов и выходов несколько, у каждого выхода появляется собственный набор весов. В матрице весов одна строка соответствует одному выходу.</p>
+    <div class="code-example" data-code-title="Два выхода для одного наблюдения" data-result="[4.5, 2.0]"><pre><code>inputs = (4, 3, 2)
+weight_rows = ((0.5, 1.0, -0.25), (1.0, 0.0, -1.0))
+outputs = [
+    sum(x * w for x, w in zip(inputs, row))
+    for row in weight_rows
+]
+print(outputs)</code></pre></div>
+    <p>В NumPy та же операция записывается как <code>W @ x</code>, где <code>W</code> — матрица весов, а <code>x</code> — вектор входов. Если слоёв несколько, выход одного слоя становится входом следующего. Число его выходов должно совпадать с числом входов следующего слоя.</p>
+    <p><strong>Проверка понимания.</strong> При прямом проходе значения движутся от входа к выходу. Сравнение прогноза с целью и изменение весов появятся в следующей главе.</p>
+  </section>
+</template>
+
+<template id="descent-content">
+  <header class="document-head">
+    <p class="caption">Эндрю Траск · Грокаем глубокое обучение · Глава 4</p>
+    <h1 class="serif">Градиентный спуск</h1>
+    <p class="deck">Как сеть использует ошибку, чтобы обновить вес</p>
+  </header>
+  <div class="takeaway"><svg class="icon" aria-hidden="true"><use href="#book-icon"/></svg><div><h2>Главная мысль</h2><p>Сначала сеть делает прогноз, затем сравнивает его с правильным ответом. Производная подсказывает, как изменение веса повлияет на ошибку, а скорость обучения задаёт размер шага.</p></div></div>
+  <section class="topic-section" id="topic-loss"><header><h2 class="serif">Прогноз и ошибка</h2></header>
+    <p>Возьмём один вход <code>x = 2</code>, правильный ответ <code>y = 6</code> и начальный вес <code>w = 2</code>. Модель умножает вход на вес и выдаёт 4. Остаток <code>ŷ − y</code> равен −2, а квадрат ошибки равен 4.</p>
+    <div class="equation" aria-label="Прогноз равен икс умножить на вес. Ошибка равна квадрату разности прогноза и цели.">ŷ = xw &nbsp; · &nbsp; E = (ŷ − y)²</div>
+    <p>Квадрат одинаково оценивает промах на 2 в обе стороны и сильнее штрафует большие промахи. Чтобы понять, куда менять вес, понадобится знак остатка и то, как сам вход влияет на прогноз.</p>
+    <h3>Пробный шаг</h3>
+    <p>Можно проверить два соседних веса. При <code>w = 1,9</code> квадрат ошибки равен 4,84, а при <code>w = 2,1</code> — 3,24. Второй шаг уменьшает ошибку. Этот приём требует пересчитать прогноз для каждого пробного веса. Возле минимума фиксированный шаг может оказаться слишком большим.</p>
+  </section>
+  <section class="topic-section" id="topic-gradient"><header><h2 class="serif">Как изменить вес</h2></header>
+    <p>Производная — это наклон ошибки в текущей точке. Положительный наклон означает, что при небольшом увеличении веса ошибка растёт. Отрицательный наклон означает, что при небольшом увеличении веса ошибка уменьшается. Поэтому шаг делают в сторону, противоположную наклону.</p>
+    <div class="equation" aria-label="Производная половины квадрата ошибки равна произведению входа на разность прогноза и цели.">L = ½(ŷ − y)² &nbsp; · &nbsp; ∂L/∂w = x(ŷ − y)</div>
+    <p>В коде Траска используется выражение <code>x * (prediction - target)</code>. Это точная производная для половины квадрата ошибки. Для полного квадрата появляется множитель 2, который можно учесть в размере шага. Если вход равен нулю, прогноз не зависит от веса и поправка тоже равна нулю.</p>
+    <p>В нашем примере производная равна <code>2 × (−2) = −4</code>. При скорости обучения <code>α = 0,1</code> новый вес равен <code>2 − 0,1 × (−4) = 2,4</code>. Прогноз становится 4,8, а квадрат ошибки уменьшается до 1,44.</p>
+  </section>
+  <section class="topic-section" id="topic-training"><header><h2 class="serif">Цикл обучения на Python</h2></header>
+    <p>Каждая строка вывода показывает вес, прогноз и ошибку <strong>до следующего обновления</strong>. Отдельная переменная для остатка позволяет использовать его и для подсчёта ошибки, и для вычисления градиента.</p>
+    <div class="code-example" data-code-title="Обучение одного веса" data-result="w=2.000  y=4.000  E=4.0000&#10;w=2.400  y=4.800  E=1.4400&#10;w=2.640  y=5.280  E=0.5184&#10;w=2.784  y=5.568  E=0.1866"><pre><code>x, target = 2.0, 6.0
+weight = 2.0
+alpha = 0.1
+
+for step in range(4):
+    prediction = x * weight
+    residual = prediction - target
+    error = residual ** 2
+    print(
+        f"w={weight:.3f}  y={prediction:.3f}  "
+        f"E={error:.4f}"
+    )
+    gradient = x * residual
+    weight -= alpha * gradient</code></pre></div>
+    <p>Целевой вес для этой задачи равен <strong>3</strong>: при входе 2 он даёт прогноз 6. В цикле вес приближается к нему постепенно.</p>
+  </section>
+  <section class="topic-section" id="topic-step-size"><header><h2 class="serif">Размер шага и расхождение</h2></header>
+    <p>Слишком большой шаг может перескочить минимум. В следующей итерации вес движется обратно, и если шаг снова слишком велик, промах может стать ещё больше. Здесь разницу видно уже после первого обновления.</p>
+    <table class="comparison"><caption>После первого обновления</caption><thead><tr><th scope="col">Скорость</th><th scope="col">Вес</th><th scope="col">Прогноз</th><th scope="col">Квадрат ошибки</th></tr></thead><tbody><tr><th scope="row">α = 0,10</th><td>2,4</td><td>4,8</td><td>1,44</td></tr><tr><th scope="row">α = 0,55</th><td>4,2</td><td>8,4</td><td>5,76</td></tr></tbody></table>
+    <figure class="chart" aria-labelledby="loss-graph-label">
+      <svg viewBox="0 0 600 250" role="img" aria-labelledby="loss-graph-title loss-graph-desc">
+        <title id="loss-graph-title">Квадрат ошибки при двух скоростях обучения</title><desc id="loss-graph-desc">На шагах от нуля до четырёх ошибка при скорости 0,10 убывает с 4 до 0,067, а при скорости 0,55 растёт с 4 до 17,199.</desc>
+        <g stroke="#dce4d8" stroke-width="1"><path d="M54 42h364M54 92h364M54 142h364M54 192h364"/></g>
+        <g fill="#48604f" font-family="Geist, sans-serif" font-size="17" text-anchor="end"><text x="42" y="47">18</text><text x="42" y="97">12</text><text x="42" y="147">6</text><text x="42" y="197">0</text></g>
+        <g fill="#48604f" font-family="Geist, sans-serif" font-size="17" text-anchor="middle"><text x="54" y="218">0</text><text x="145" y="218">1</text><text x="236" y="218">2</text><text x="327" y="218">3</text><text x="418" y="218">4</text><text x="236" y="244">Шаг обучения</text></g>
+        <polyline points="54,158.67 145,180 236,187.68 327,190.44 418,191.44" stroke="#3b714e" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="54,158.67 145,144 236,122.88 327,92.47 418,48.67" stroke="#9c5439" stroke-width="3" fill="none" stroke-dasharray="6 5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="418" cy="48.67" r="4" fill="#9c5439"/><circle cx="418" cy="191.44" r="4" fill="#3b714e"/>
+        <g font-family="Geist, sans-serif" font-size="20" font-weight="600"><text x="435" y="55" fill="#87432d">α = 0,55</text><text x="435" y="197" fill="#315d42">α = 0,10</text></g>
+      </svg>
+      <figcaption id="loss-graph-label">Квадрат ошибки на каждом шаге. Обе линии стартуют с одного веса. Сплошная линия сходится к нулю, пунктирная расходится.</figcaption>
+    </figure>
+    <p><strong>Попробуй.</strong> Поменяй в примере только <code>alpha</code> на <code>0.55</code> и сравни вывод с графиком. Эти значения относятся к данной учебной задаче: в других моделях подходящий шаг зависит от данных и функции ошибки.</p>
+  </section>
+</template>

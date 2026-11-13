@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Поля — тетрадка для чтения</title>
+<style>
+FONT_STYLES
+:root{color-scheme:dark;--bg:#181818;--surface:#1f1f1f;--raised:#272727;--border:#373832;--light:#f2f1eb;--muted:#b0b1a7;--accent:#dbe8b7;--ink:#202822;--paper:#fff;--rule:#e1e5dc;--green:#375443;--ease:cubic-bezier(.22,1,.36,1);font:400 16px/24px Geist,system-ui,sans-serif;background:var(--bg);color:var(--light)}
+*,*::before,*::after{box-sizing:border-box}
+body,h1,h2,h3,p,figure,ul,ol{margin:0}
+h1,h2,h3{text-wrap:balance}
+p{text-wrap:pretty}
+a{color:inherit;text-underline-offset:4px}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid #87976f;outline-offset:4px}
+.icon{display:inline-block;width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.bar{height:64px;border-bottom:1px solid #ffffff13;background:var(--bg);position:sticky;top:0;z-index:2}
+.bar-in{height:100%;max-width:1360px;margin:auto;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;padding:0 32px}
+.brand{font-size:20px;font-weight:600;line-height:28px;text-decoration:none;display:inline-flex;width:max-content;align-items:center;gap:8px;letter-spacing:-.035em}
+.brand-mark{width:24px;height:24px;display:grid;place-items:center;border:1px solid #7c876a;border-radius:4px;color:var(--accent)}
+.bar-context{max-width:50vw;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--muted);font-size:14px;line-height:20px}
+.bar-action{justify-self:end}
+.link-button,.control{min-height:36px;border:1px solid transparent;border-radius:8px;background:transparent;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:8px 12px;font-size:14px;line-height:20px;font-weight:500;text-decoration:none}
+.link-button:hover{background:var(--raised)}
+.control{border-color:var(--border);background:var(--surface)}
+.control:hover{background:var(--raised)}
+.control.primary{background:var(--accent);border-color:var(--accent);color:#242d1d;font-weight:600}
+.control.primary:hover{background:#eff5dd}
+.control:active,.link-button:active{transform:scale(.98)}
+.serif{font-family:Georgia,'Times New Roman',serif;font-weight:400;letter-spacing:-.04em}
+.home{max-width:720px;margin:0 auto;padding:96px 24px 64px}
+.home h1{font-size:60px;line-height:1.02;margin-bottom:12px}
+.home-intro{color:var(--muted);margin-bottom:32px}
+.picker{border:1px solid var(--border);background:var(--surface);border-radius:16px;overflow:hidden}
+.search{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);color:var(--muted)}
+.search input{width:100%;min-width:0;background:transparent;border:0;padding:4px 0;color:var(--light)}
+.search input::placeholder{color:var(--muted)}
+.search:focus-within{box-shadow:inset 0 0 0 1px #87976f}
+.search input:focus{outline:0}
+.search .link-button{padding:4px 8px;min-height:32px;color:var(--accent);white-space:nowrap}
+.book-list{padding:8px;display:grid;gap:4px}
+.book-row{width:100%;border:1px solid transparent;text-align:left;text-decoration:none;background:transparent;border-radius:8px;padding:12px;display:grid;grid-template-columns:48px minmax(0,1fr) 16px;align-items:center;gap:16px}
+.book-row:hover{background:var(--raised);border-color:#383a31}
+.book-row strong{display:block;font-size:18px;line-height:28px;font-weight:500;overflow-wrap:anywhere}
+.caption{color:var(--muted);font-size:14px;line-height:20px}
+.book-row>.icon{color:var(--accent)}
+.mini-cover{position:relative;display:grid;align-content:end;height:64px;background:#d8e2b7;color:#253329;border-radius:3px 6px 6px 3px;padding:4px 8px;border-left:4px solid #99a77c;font-family:Georgia,serif;font-size:14px;line-height:20px;overflow:hidden}
+.mini-cover::before{content:"";position:absolute;right:-8px;top:8px;width:32px;height:32px;border:1px solid #667653;border-radius:50%;box-shadow:0 0 0 4px #d8e2b7,0 0 0 5px #667653}
+.empty-line{padding:16px;color:var(--muted)}
+.contents{max-width:1160px;margin:auto;padding:48px 32px 64px}
+.contents-grid{display:grid;grid-template-columns:minmax(216px,304px) minmax(0,1fr);align-items:start;gap:64px}
+.book-card{position:relative;isolation:isolate;overflow:hidden;min-height:376px;display:flex;flex-direction:column;justify-content:space-between;gap:24px;border-radius:4px 12px 12px 4px;padding:24px 24px 24px 32px;background:#dce6bd;color:#24332a;border-left:8px solid #aab88c}
+.book-card small{font-size:14px;line-height:20px}
+.book-card h2{font-size:36px;line-height:40px;overflow-wrap:anywhere;position:relative;z-index:1}
+.book-card .cover-art{display:block;width:min(100%,216px);height:auto;aspect-ratio:216/144;margin-left:auto}
+.book-card .cover-art circle,.book-card .cover-art path{vector-effect:non-scaling-stroke}
+.outline-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:24px}
+.outline-header h1{font-size:48px;line-height:1.05}
+.outline-header .caption{margin-bottom:8px}
+.chapters{border-top:1px solid var(--border)}
+.chapter{border-bottom:1px solid var(--border)}
+.chapter summary,.chapter-direct{display:grid;grid-template-columns:32px minmax(0,1fr) auto 16px;align-items:center;gap:12px;cursor:pointer;padding:16px 8px;list-style:none}
+.chapter summary::-webkit-details-marker{display:none}
+.chapter summary:hover,.chapter-direct:hover{background:var(--surface)}
+.chapter summary strong,.chapter-direct strong{font-weight:500}
+.chapter-direct{text-decoration:none;color:var(--accent);background:var(--surface)}
+.chapter-direct:hover{background:var(--raised)}
+.chapter-ready summary strong,.chapter-ready summary .chapter-count{color:var(--accent)}
+.chapter-number{color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.chapter summary>.icon{color:var(--muted);transform:rotate(90deg)}
+.chapter[open] summary>.icon{transform:rotate(-90deg)}
+.chapter[open] summary strong,.chapter[open] .chapter-number{color:var(--accent)}
+.chapter-count{font-size:12px;line-height:16px;color:var(--muted);white-space:nowrap}
+.chapter-content{padding:0 8px 16px 48px;display:grid;gap:4px}
+.topic{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:36px;border-radius:8px;padding:8px 12px;text-decoration:none;font-size:14px;line-height:20px;background:var(--surface)}
+.topic:hover{background:var(--raised);color:var(--accent)}
+.topic.chapter-full{background:var(--accent);color:#293422;font-weight:600;margin-top:8px}
+.topic.chapter-full:hover{background:#eff5dd}
+.topic .icon{color:inherit}
+.chapter-content p{padding:4px 0 8px}
+.chapter-content .control{justify-self:start}
+.reader{color-scheme:light;background:var(--paper);color:var(--ink);min-height:calc(100dvh - 64px);padding:64px 32px}
+.document{max-width:860px;margin:auto}
+.document-head{padding-bottom:32px}
+.document-head .caption{color:#4c6556;font-weight:500;margin-bottom:16px}
+.document h1{font-size:60px;line-height:1.03;max-width:740px}
+.document .deck{color:#526256;font-size:18px;line-height:28px;margin-top:16px}
+.takeaway{padding:20px 24px;margin-bottom:32px;background:#eff3e7;border:1px solid #e3e9d9;border-radius:8px;display:grid;grid-template-columns:16px minmax(0,1fr);gap:12px}
+.takeaway>.icon{margin-top:4px;color:var(--green)}
+.takeaway h2{font-size:16px;line-height:24px;color:var(--green);font-weight:600;margin-bottom:4px}
+.takeaway p,.topic-section p{font-size:16px;line-height:24px}
+.diagram{margin:0 0 40px;border:1px solid #e4e9df;background:#f5f7f0;border-radius:12px;padding:24px;color:var(--green)}
+.diagram-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:16px}
+.diagram h2{font-size:20px;line-height:28px;font-weight:600}
+.diagram .caption{color:#4c6355}
+.flow{display:grid;grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr) 24px minmax(0,1fr);gap:8px;align-items:center}
+.flow figure{display:grid;gap:4px;justify-items:center;text-align:center;align-content:center;background:#fff;border:1px solid #dce4d5;border-radius:8px;min-height:132px;padding:12px}
+.flow figure>svg{width:64px;height:48px;stroke:var(--green);stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.flow strong{font-weight:600;font-size:14px;line-height:20px}
+.flow span{font-size:12px;line-height:16px;color:#526256}
+.diagram figcaption{font-size:14px;line-height:20px;margin-top:16px;color:#526256}
+.topic-section{border-top:1px solid var(--rule);padding:24px 0 32px;scroll-margin-top:80px}
+.topic-section header{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:12px}
+.topic-section h2{font-size:36px;line-height:40px}
+.topic-section a{color:var(--green);font-size:14px;line-height:20px;white-space:nowrap}
+.topic-section p+p{margin-top:12px}
+.topic-section .diagram{margin:24px 0 0}
+.topic-section h3{font-size:20px;line-height:28px;margin:24px 0 8px;font-weight:600}
+.topic-section ul{padding-left:24px;margin-top:12px}
+.topic-section li+li{margin-top:8px}
+.worked-example{background:#f5f7f0;border:1px solid var(--rule);border-radius:8px;padding:16px 24px;margin-top:24px}
+.worked-example h3{margin-top:0}
+.equation{border:1px solid #dfe7d9;background:#f3f6ef;color:#284536;padding:12px 16px;border-radius:8px;margin:16px 0;font:400 20px/28px Georgia,serif;overflow-wrap:anywhere}
+.code-example{border:1px solid #26352c;background:#1b241e;color:#e9efe6;border-radius:12px;overflow:hidden;margin:16px 0 20px}
+.code-header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 16px;background:#253229;border-bottom:1px solid #3c4a40;color:#d5e1d4;font-size:14px;line-height:20px}
+.copy-code{border:1px solid #617063;background:transparent;color:#eff4eb;border-radius:6px;padding:4px 8px;font-size:12px;line-height:16px}
+.copy-code:hover{background:#394c3e}
+.code-example pre{margin:0;padding:16px 20px;overflow:auto;tab-size:4}
+.code-example code,.code-output output{font:400 14px/24px 'Cascadia Mono',Consolas,monospace;white-space:pre}
+.code-keyword{color:#ebc4ae}.code-number{color:#e7d4a4}.code-function{color:#c2df9e}.code-string{color:#aedacc}.code-comment{color:#aebfb0}
+.code-output{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding:8px 16px;background:#222f26;border-top:1px solid #3c4a40;color:#d5e1d4;font-size:12px;line-height:16px}
+.code-output output{white-space:pre-wrap;color:#e9efe6}
+.comparison{width:100%;border-collapse:collapse;margin:16px 0;text-align:left;font-variant-numeric:tabular-nums;font-size:14px;line-height:20px}
+.comparison caption{text-align:left;font-weight:600;color:var(--green);margin-bottom:8px}
+.comparison th,.comparison td{border-bottom:1px solid var(--rule);padding:8px}
+.comparison thead{background:#f0f4ed}
+.comparison tbody th{font-weight:500}
+.chart{margin:24px 0;background:#f7f9f5;border:1px solid #dfe7db;border-radius:12px;padding:16px}
+.chart svg{width:100%;height:auto;display:block}
+.chart figcaption{margin-top:8px;color:#475c4f;font-size:14px;line-height:20px}
+.chapter-neighbors{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+.chapter-notes label,.previous-notes label{display:block;color:var(--green);font-size:14px;line-height:20px;margin:8px 0}
+.sequence{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:0;margin:16px 0}
+.sequence li{border:1px solid var(--rule);padding:12px;border-radius:8px;font-size:14px;line-height:20px}
+.sequence span{display:block;color:var(--green);font-weight:600;margin-bottom:4px}
+.own-note{width:100%;min-height:120px;resize:vertical;background:#fbfcfa;color:var(--ink);border:1px solid #ccd5cb;border-radius:8px;padding:12px}
+.document-footer{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid var(--rule);padding-top:16px;color:var(--green);font-size:14px;line-height:20px}
+.document .control{background:#eef2e9;color:var(--green);border-color:#d2dccd}
+dialog{color-scheme:dark;background:var(--surface);color:var(--light);border:1px solid var(--border);border-radius:12px;padding:24px;width:min(500px,calc(100% - 32px));max-height:calc(100dvh - 32px);overflow:auto}
+dialog::backdrop{background:#0009}
+dialog h2{font-size:24px;line-height:32px;margin-bottom:8px;font-weight:600}
+dialog label{display:block;margin-top:16px;margin-bottom:4px;font-size:14px;line-height:20px}
+dialog input,dialog textarea{display:block;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px}
+dialog textarea{min-height:140px;resize:vertical}
+.form-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-top:24px}
+.form-error{color:#ffb2a6;margin-top:8px}
+@media(max-width:850px){.contents-grid{grid-template-columns:216px minmax(0,1fr);gap:32px}.book-card{min-height:324px}.book-card h2{font-size:30px;line-height:36px}.outline-header{align-items:flex-start;flex-direction:column;gap:8px}}
+@media(max-width:620px){.bar{height:56px}.bar-in{padding:0 12px;gap:8px}.bar-context{max-width:42vw;font-size:12px;line-height:16px}.bar .link-button{padding:8px;font-size:12px;line-height:16px}.brand{font-size:18px}.brand-mark{width:20px;height:20px}.home{padding:64px 16px 40px}.home h1{font-size:48px}.home-intro{margin-bottom:24px}.contents{padding:24px 16px 40px}.contents-grid{grid-template-columns:1fr;gap:24px}.book-card{min-height:148px;padding:16px;justify-content:flex-end;gap:8px}.book-card h2{max-width:75%}.book-card .cover-art{position:absolute;right:12px;bottom:12px;width:112px;opacity:.75;z-index:-1}.outline-header{margin-bottom:16px}.outline-header h1{font-size:36px}.chapter summary{grid-template-columns:24px minmax(0,1fr) auto 16px;gap:8px}.chapter-content{padding-left:32px}.reader{min-height:calc(100dvh - 56px);padding:32px 16px}.document h1{font-size:40px}.document .deck{font-size:16px;line-height:24px}.document-head{padding-bottom:24px}.takeaway{padding:16px;margin-bottom:24px}.diagram{padding:16px;margin-bottom:24px}.diagram-head{display:block}.flow{grid-template-columns:1fr;justify-items:stretch;gap:4px}.flow>.icon{justify-self:center;transform:rotate(90deg)}.flow figure{min-height:88px;grid-template-columns:64px 1fr;gap:0 12px;justify-items:start;text-align:left;align-items:center}.flow figure>svg{grid-row:span 2}.topic-section h2{font-size:30px;line-height:36px}.sequence{grid-template-columns:1fr}.topic-section{scroll-margin-top:72px}}
+@media(max-width:350px){.bar-context{display:none}.bar-in{grid-template-columns:1fr 1fr}.search{gap:8px;padding:8px 12px}.home h1{font-size:36px}.chapter-count{display:none}.chapter summary{grid-template-columns:24px minmax(0,1fr) 16px}.topic-section header{flex-wrap:wrap}}
+@media(max-width:620px){.chapter-direct{grid-template-columns:24px minmax(0,1fr) auto 16px;gap:8px}.worked-example{padding:16px}}
+@media(max-width:620px){.code-example pre{padding:12px}.code-header,.code-output{padding:8px 12px}.code-example code,.code-output output{font-size:12px;line-height:20px}.comparison th,.comparison td{padding:8px 4px}.chart{padding:8px}}
+@media print{
+  @page{size:A4;margin:16mm}
+  body,.reader{background:white;color:#202822}.bar,.chapter-notes,.copy-code,.chapter-neighbors,.document-footer>a:first-child{display:none!important}
+  .reader{padding:0;min-height:0}.document{max-width:none}.document h1{font-size:36px;line-height:40px}.document-head{padding-bottom:16px}.topic-section{padding:16px 0}.topic-section h2{font-size:24px;line-height:32px}.code-example,.chart,.takeaway{break-inside:avoid;print-color-adjust:exact;-webkit-print-color-adjust:exact}.code-example pre{overflow:visible;white-space:pre-wrap}.code-example code{white-space:pre-wrap}.topic-section header{break-after:avoid}
+}
+@media(max-width:350px){.chapter-direct{grid-template-columns:24px minmax(0,1fr) 16px}}
+@media(prefers-reduced-motion:no-preference){button,a{transition:background-color 200ms var(--ease),transform 200ms var(--ease)}}
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true" style="position:absolute">
+<symbol id="book-icon" viewBox="0 0 24 24"><path d="M6 3h13v18H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm2 0v18M4 17h15"/></symbol>
+<symbol id="search-icon" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></symbol>
+<symbol id="right-icon" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></symbol>
+<symbol id="back-icon" viewBox="0 0 24 24"><path d="M20 12H5m6-6-6 6 6 6"/></symbol>
+<symbol id="chevron-icon" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+<symbol id="plus-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="pdf-icon" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M5 16v4h14v-4"/></symbol>
+</svg>
+<header class="bar"><div class="bar-in">
+  <a class="brand" id="brand" href="#"><span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#book-icon"/></svg></span>Поля</a>
+  <span id="bar-context" class="bar-context">Макет тетрадки</span>
+  <a class="link-button bar-action" id="download" download="Грокаем глубокое обучение — глава 1.pdf" hidden><svg class="icon" aria-hidden="true"><use href="#pdf-icon"/></svg>PDF</a>
+  <button class="link-button bar-action" id="print-chapter" type="button" title="Печать или сохранение в PDF" hidden><svg class="icon" aria-hidden="true"><use href="#pdf-icon"/></svg>PDF</button>
+</div></header>
+<main class="home" id="home">
+  <h1 class="serif">Мои книги</h1>
+  <p class="home-intro">Выбери книгу, чтобы открыть её оглавление.</p>
+  <div class="picker">
+    <div class="search"><svg class="icon" aria-hidden="true"><use href="#search-icon"/></svg><input type="search" id="search" placeholder="Название или автор" aria-label="Найти книгу"><button type="button" class="link-button" id="add-book"><svg class="icon" aria-hidden="true"><use href="#plus-icon"/></svg>Добавить</button></div>
+    <div class="book-list" id="books"></div>
+  </div>
+</main>
+<main class="contents" id="contents" hidden>
+  <div class="contents-grid">
+    <div class="book-card">
+      <small id="cover-author"></small>
+      <svg class="cover-art" viewBox="0 0 216 144" aria-hidden="true" fill="none" stroke="#516446" stroke-width="1.2">
+        <path d="M8 72h200M108 8v128M48 28l120 88M48 116l120-88" opacity=".45"/>
+        <circle cx="108" cy="72" r="64"/><circle cx="108" cy="72" r="48"/><circle cx="108" cy="72" r="32"/>
+        <path d="M44 72 80 44 108 40 140 60 172 72 140 104 108 104 80 92Z"/>
+        <circle cx="80" cy="44" r="4" fill="#516446"/><circle cx="140" cy="60" r="4" fill="#516446"/><circle cx="108" cy="104" r="4" fill="#516446"/><circle cx="172" cy="72" r="4" fill="#516446"/>
+      </svg>
+      <h2 class="serif" id="cover-title"></h2>
+    </div>
+    <div>
+      <header class="outline-header"><div><p class="caption" id="contents-count"></p><h1 class="serif">Оглавление</h1></div><button class="control" type="button" id="edit-topics">Настроить темы</button></header>
+      <div id="chapter-list" class="chapters"></div>
+    </div>
+  </div>
+</main>
+<main class="reader" id="reader" hidden>
+  <article class="document" id="document"></article>
+</main>
+<template id="chapter-content">
+  <header class="document-head">
+    <p class="caption">Эндрю Траск · Грокаем глубокое обучение · Глава 1</p>
+    <h1 class="serif">Введение в глубокое обучение</h1>
+    <p class="deck">Зачем изучать нейросети и с чего начать</p>
+  </header>
+  <div class="takeaway"><svg class="icon" aria-hidden="true"><use href="#book-icon"/></svg><div><h2>Главная мысль</h2><p>Глубокое обучение помогает автоматизировать отдельные интеллектуальные задачи. Траск предлагает освоить его через практику: собрать простую нейросеть на Python и NumPy, проследить за её вычислениями и постепенно научить её уменьшать ошибку.</p></div></div>
+  <section class="topic-section" id="topic-purpose"><header><h2 class="serif">Зачем изучать глубокое обучение</h2><a href="MANNING_URL#page=13" target="_blank" rel="noreferrer">с. 4 ↗</a></header>
+    <p>Схожие принципы работы нейросетей применимы в компьютерном зрении, распознавании речи и машинном переводе. Траск видит в этом способ постепенно автоматизировать задачи, для которых раньше требовался человек. В 2019 году он предполагал, что технология может затронуть работу операторов колл-центров, водителей и младших аналитиков.</p>
+    <p>Есть и творческая сторона. Траск предлагает представить модель, которая учится рисовать в стиле Моне на примерах картин. Пример показывает, почему автору интересно моделировать человеческие способности.</p>
+  </section>
+  <section class="topic-section" id="topic-method"><header><h2 class="serif">Как автор предлагает учиться</h2><a href="MANNING_URL#page=14" target="_blank" rel="noreferrer">с. 5–6 ↗</a></header>
+    <p>Траск начинает с устройства нейросети. Он сравнивает обучение с вождением: знание конкретной модели автомобиля помогает управлять ею, а сам навык вождения пригодится и на другой машине. Так и здесь: практика с простыми реализациями даёт основу для работы с фреймворками.</p>
+    <p>Математику автор объясняет через понятные аналогии. После вводных глав читатель строит небольшие модели и видит, какую задачу решает каждый инструмент и когда он нужен.</p>
+    <ol class="sequence"><li><span>Глава 2</span>Разобраться в основных понятиях</li><li><span>Глава 3</span>Собрать сеть, которая выдаёт прогноз</li><li><span>Глава 4</span>Изменить вес сети, чтобы уменьшить ошибку</li></ol>
+  </section>
+  <section class="topic-section" id="topic-setup"><header><h2 class="serif">Что нужно для старта</h2><a href="MANNING_URL#page=16" target="_blank" rel="noreferrer">с. 7–8 ↗</a></header>
+    <p>Для начала хватит школьной алгебры, умения читать графики и основ Python. Траск предлагает просмотреть темы вводного курса Python и проверить, насколько они знакомы.</p>
+    <ul><li><strong>Jupyter Notebook</strong> позволяет выполнять код по частям и смотреть промежуточные значения.</li><li><strong>NumPy</strong> даёт операции с массивами и матрицами, из которых можно собрать вычисления сети.</li></ul>
+    <p style="margin-top:12px">Примеры в книге написаны на Python 2.7. По словам Траска, он также проверил их на Python 3.</p>
+  </section>
+  <section class="topic-section" id="own-project"><header><h2 class="serif">Своя задача для практики</h2><a href="MANNING_URL#page=16" target="_blank" rel="noreferrer">с. 7 ↗</a></header>
+  <p>Автор советует выбрать вопрос, который тебе действительно интересен, и определить, какие данные помогут на него ответить. Его занимала идея прогнозировать цены акций по сообщениям в Twitter.</p>
+  <figure class="diagram" aria-labelledby="diagram-title">
+    <div class="diagram-head"><h2 id="diagram-title">Как выглядит задача прогнозирования</h2><span class="caption">Пример из главы</span></div>
+    <div class="flow">
+      <figure><svg viewBox="0 0 64 48" aria-hidden="true"><path d="M10 7h35v22H26l-9 7v-7h-7zm12 30h19l7 5v-5h7V18h-5M18 15h18m-18 6h11"/></svg><strong>Данные</strong><span>Сообщения в Twitter</span></figure>
+      <svg class="icon" aria-hidden="true"><use href="#right-icon"/></svg>
+      <figure><svg viewBox="0 0 64 48" aria-hidden="true"><path d="M14 13l18-6 18 17-18 17-18-6 18-28m-18 6 18 28m-18-6 36-11m-36-11 36 11" opacity=".65"/><circle cx="14" cy="13" r="4" fill="#d9e6c3"/><circle cx="14" cy="35" r="4" fill="#d9e6c3"/><circle cx="32" cy="7" r="4" fill="#fff"/><circle cx="32" cy="41" r="4" fill="#fff"/><circle cx="50" cy="24" r="4" fill="#d9e6c3"/></svg><strong>Модель</strong><span>Ищет закономерности</span></figure>
+      <svg class="icon" aria-hidden="true"><use href="#right-icon"/></svg>
+      <figure><svg viewBox="0 0 64 48" aria-hidden="true"><path d="M9 8v31h47M14 31l9-9 10 5 9-12 11 3"/><circle cx="42" cy="15" r="3" fill="#d9e6c3"/><circle cx="53" cy="18" r="3" fill="#d9e6c3"/></svg><strong>Результат</strong><span>Прогноз котировок</span></figure>
+    </div>
+    <figcaption>Схема показывает постановку задачи: что подать на вход и какой прогноз получить на выходе.</figcaption>
+  </figure>
+  <div class="worked-example"><h3>Дополнительный пример · время в дороге</h3><p>Три поездки на работу заняли 32, 40 и 36 минут. Первый ориентир — среднее, 36 минут. Если следующая поездка заняла 44 минуты, прогноз ошибся на 8 минут.</p><p>Чтобы попробовать предсказывать точнее, запиши время выезда, день недели и погоду. Эти данные известны до поездки. Сравни прогнозы на новых поездках с простым средним, чтобы понять, помогли ли дополнительные данные.</p></div>
+  </section>
+</template>
+CHAPTER_TEMPLATES
+<dialog id="book-dialog" aria-labelledby="new-title"><form id="book-form"><h2 id="new-title">Добавить книгу</h2><label for="book-title">Название</label><input id="book-title" required maxlength="120"><label for="book-author">Автор</label><input id="book-author" maxlength="100"><div class="form-actions"><button class="control" type="button" data-close="book-dialog">Отмена</button><button class="control primary" type="submit">Добавить</button></div></form></dialog>
+<dialog id="topics-dialog" aria-labelledby="topics-title"><form id="topics-form"><h2 id="topics-title">Темы главы</h2><p class="caption" id="topics-caption"></p><label for="topic-input">Одна тема на строку</label><textarea id="topic-input" maxlength="1200"></textarea><p class="form-error" id="topics-error" role="status" hidden></p><div class="form-actions"><button class="control" type="button" id="suggest-topics">Предложить темы</button><button class="control primary" type="submit">Сохранить</button></div></form></dialog>
+<script>
+const $ = (selector) => document.querySelector(selector);
+const sourceBook = { id: 'trask', title: 'Грокаем глубокое обучение', author: 'Эндрю Траск', chapters: ['Введение в глубокое обучение', 'Как учатся машины', 'Прямое распространение', 'Градиентный спуск'] };
+const sourceUrl = 'MANNING_URL';
+const sampleChapters = {
+  0: { template: '#chapter-content', source: sourceUrl + '#page=12' },
+  2: { template: '#prediction-content', source: 'https://livebook.manning.com/book/grokking-deep-learning/chapter-3' },
+  3: {
+    template: '#descent-content',
+    source: 'https://livebook.manning.com/book/grokking-deep-learning/chapter-4/1',
+    topics: [
+      { id: 'loss', title: 'Прогноз и ошибка' },
+      { id: 'gradient', title: 'Как изменить вес' },
+      { id: 'training', title: 'Цикл обучения на Python' },
+      { id: 'step-size', title: 'Размер шага и расхождение' },
+    ],
+  },
+};
+const namespace = 'polya-reading-room-';
+
+function load(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(namespace + key)) ?? fallback; } catch { return fallback; }
+}
+
+function save(key, value) {
+  try { localStorage.setItem(namespace + key, JSON.stringify(value)); } catch { /* The current session remains usable. */ }
+}
+
+const books = [sourceBook, ...load('books', [])];
+const topicOverrides = load('topics', {});
+const notes = load('notes', {});
+let route = { view: 'home' };
+let activeChapter = 0;
+let activeBook = null;
+
+function make(tag, className = '', value = '') {
+  const node = document.createElement(tag);
+  node.className = className;
+  node.textContent = value;
+  return node;
+}
+
+function icon(name) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+  svg.setAttribute('class', 'icon');
+  svg.setAttribute('aria-hidden', 'true');
+  use.setAttribute('href', '#' + name + '-icon');
+  svg.append(use);
+  return svg;
+}
+
+function link(className, label, href) {
+  const anchor = make('a', className, label);
+  anchor.href = href;
+  return anchor;
+}
+
+function button(className, label, action) {
+  const node = make('button', className, label);
+  node.type = 'button';
+  node.addEventListener('click', action);
+  return node;
+}
+
+function keyFor(book, chapter) { return book.id + '/' + chapter; }
+function sampleFor(book, chapter) { return book === sourceBook ? sampleChapters[chapter] : undefined; }
+function topicsFor(book, chapter) { return topicOverrides[keyFor(book, chapter)] ?? sampleFor(book, chapter)?.topics ?? []; }
+function outlineTopics(book, chapter) {
+  const sample = sampleFor(book, chapter);
+  return sample && !sample.topics ? [] : topicsFor(book, chapter);
+}
+function chapterUrl(book, chapter, topic) { return `#read/${book.id}/${chapter}${topic ? '/' + topic : ''}`; }
+function countTopics(count) {
+  if (count % 100 >= 11 && count % 100 <= 14) return `${count} тем`;
+  if (count % 10 === 1) return `${count} тема`;
+  if ([2, 3, 4].includes(count % 10)) return `${count} темы`;
+  return `${count} тем`;
+}
+
+function drawBooks() {
+  const query = $('#search').value.trim().toLowerCase();
+  const results = books.filter((book) => (book.title + ' ' + book.author).toLowerCase().includes(query));
+  $('#books').replaceChildren(...results.map((book) => {
+    const row = link('book-row', '', '#book/' + book.id);
+    const cover = make('span', 'mini-cover', book === sourceBook ? 'DL' : book.title.slice(0, 2));
+    cover.setAttribute('aria-hidden', 'true');
+    const label = make('span');
+    label.append(make('strong', '', book.title));
+    if (book.author) label.append(make('span', 'caption', book.author));
+    row.append(cover, label, icon('right'));
+    return row;
+  }));
+  if (!results.length) $('#books').append(make('p', 'empty-line', 'Книга не найдена. Можно добавить её по названию.'));
+}
+
+function drawContents(book, selected) {
+  activeBook = book;
+  activeChapter = selected;
+  $('#cover-title').textContent = book.title;
+  $('#cover-author').textContent = book.author || 'Моя тетрадка';
+  $('#contents-count').textContent = book === sourceBook ? 'Эндрю Траск' : book.title;
+  $('#edit-topics').hidden = !outlineTopics(book, selected).length && !sampleFor(book, selected)?.topics;
+  $('#chapter-list').replaceChildren(...book.chapters.map((chapterTitle, index) => {
+    const number = String(index + 1).padStart(2, '0');
+    const sample = sampleFor(book, index);
+    const themes = outlineTopics(book, index);
+    if (sample && !sample.topics) {
+      const row = link('chapter chapter-direct', '', chapterUrl(book, index));
+      row.setAttribute('aria-label', 'Открыть конспект: ' + chapterTitle);
+      row.append(make('span', 'chapter-number', number), make('strong', '', chapterTitle), make('span', 'chapter-count', 'Конспект'), icon('right'));
+      return row;
+    }
+    const group = make('details', sample ? 'chapter chapter-ready' : 'chapter');
+    group.name = 'book-chapters';
+    group.open = index === selected;
+    const summary = make('summary');
+    summary.append(make('span', 'chapter-number', number), make('strong', '', chapterTitle), make('span', 'chapter-count', themes.length ? countTopics(themes.length) : 'Без конспекта'), icon('chevron'));
+    group.addEventListener('toggle', () => {
+      if (group.open) {
+        activeChapter = index;
+        $('#edit-topics').hidden = !themes.length && !sample?.topics;
+      } else if (activeChapter === index) {
+        $('#edit-topics').hidden = true;
+      }
+    });
+    const content = make('div', 'chapter-content');
+    for (const topic of themes) {
+      const item = link('topic', topic.title, chapterUrl(book, index, topic.id));
+      item.append(icon('chevron'));
+      content.append(item);
+    }
+    if (sample || themes.length) {
+      const item = link('topic chapter-full', 'Открыть конспект', chapterUrl(book, index));
+      item.append(icon('right'));
+      content.append(item);
+    } else {
+      content.append(make('p', 'caption', 'У этой главы пока нет конспекта.'), button('control', 'Разбить на темы', () => openTopics(book, index)));
+    }
+    group.append(summary, content);
+    return group;
+  }));
+}
+
+function addNote(section, id) {
+  const label = make('label', '', 'Мои заметки');
+  const field = make('textarea', 'own-note');
+  const labelId = 'note-' + section.id;
+  label.htmlFor = labelId;
+  field.id = labelId;
+  field.placeholder = 'Добавить мысль или пример';
+  field.value = notes[id] ?? '';
+  field.addEventListener('input', () => { notes[id] = field.value; save('notes', notes); });
+  section.append(label, field);
+}
+
+function formatCode(article) {
+  const tokens = /("[^"\n]*"|'[^'\n]*'|#[^\n]*|\b(?:for|in|import|as)\b|\b(?:print|range|sum|zip)\b|\b\d+(?:\.\d+)?\b)/g;
+  for (const example of article.querySelectorAll('.code-example')) {
+    const code = example.querySelector('code');
+    const original = code.textContent;
+    const heading = make('div', 'code-header');
+    const copy = button('copy-code', 'Копировать', async () => {
+      try {
+        await navigator.clipboard.writeText(original);
+        copy.textContent = 'Скопировано';
+      } catch {
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(code);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        copy.textContent = 'Код выделен';
+      }
+      setTimeout(() => { copy.textContent = 'Копировать'; }, 1800);
+    });
+    heading.append(make('span', '', `Python · ${example.dataset.codeTitle}`), copy);
+    example.prepend(heading);
+    const output = make('div', 'code-output');
+    output.append(make('span', '', 'Вывод'), make('output', '', example.dataset.result));
+    example.append(output);
+    const highlighted = document.createDocumentFragment();
+    let from = 0;
+    for (const match of original.matchAll(tokens)) {
+      const value = match[0];
+      const type = /^['"]/.test(value) ? 'string' : value.startsWith('#') ? 'comment' : /^\d/.test(value) ? 'number' : /^(for|in|import|as)$/.test(value) ? 'keyword' : 'function';
+      highlighted.append(original.slice(from, match.index), make('span', 'code-' + type, value));
+      from = match.index + value.length;
+    }
+    highlighted.append(original.slice(from));
+    code.replaceChildren(highlighted);
+  }
+}
+
+function drawReader(book, chapter, topicId) {
+  const doc = $('#document');
+  const sample = sampleFor(book, chapter);
+  const themes = topicsFor(book, chapter);
+  doc.replaceChildren();
+  if (sample) {
+    const template = $(sample.template).content.cloneNode(true);
+    for (const theme of themes) {
+      const existing = template.getElementById('topic-' + theme.id);
+      if (existing) existing.querySelector('h2').textContent = theme.title;
+    }
+    doc.append(template);
+    formatCode(doc);
+    const chapterNotes = make('section', 'topic-section chapter-notes');
+    chapterNotes.id = 'chapter-notes';
+    addNote(chapterNotes, keyFor(book, chapter));
+    for (const theme of themes) {
+      const key = keyFor(book, chapter) + '/' + theme.id;
+      if (sample.topics?.some((item) => item.id === theme.id) || (!sample.topics && !notes[key])) continue;
+      const previous = make('div', 'previous-notes');
+      previous.id = 'topic-' + theme.id;
+      previous.append(make('h3', '', theme.title));
+      addNote(previous, key);
+      chapterNotes.append(previous);
+    }
+    doc.append(chapterNotes);
+  } else {
+    const header = make('header', 'document-head');
+    header.append(make('p', 'caption', `Глава ${chapter + 1} · ${book.title}`), make('h1', 'serif', book.chapters[chapter]));
+    doc.append(header);
+    for (const theme of themes) {
+      const section = make('section', 'topic-section');
+      section.id = 'topic-' + theme.id;
+      section.append(make('h2', 'serif', theme.title));
+      addNote(section, keyFor(book, chapter) + '/' + theme.id);
+      doc.append(section);
+    }
+  }
+  const footer = make('footer', 'document-footer');
+  footer.append(link('', 'К оглавлению', `#book/${book.id}/${chapter}`));
+  if (sample) {
+    const source = link('', `Глава ${chapter + 1} в издательстве Manning ↗`, sample.source);
+    source.target = '_blank';
+    source.rel = 'noreferrer';
+    footer.append(source);
+  }
+  doc.append(footer);
+  if (book === sourceBook && [2, 3].includes(chapter)) {
+    const neighbors = make('nav', 'chapter-neighbors');
+    neighbors.setAttribute('aria-label', 'Соседний конспект');
+    neighbors.append(chapter === 2 ? link('control', 'Дальше: градиентный спуск →', chapterUrl(book, 3)) : link('control', '← Прямое распространение', chapterUrl(book, 2)));
+    doc.append(neighbors);
+  }
+  requestAnimationFrame(() => {
+    if (topicId) document.getElementById('topic-' + topicId)?.scrollIntoView();
+  });
+}
+
+function render() {
+  const [view, id, rawChapter, topic] = location.hash.slice(1).split('/');
+  const book = books.find((item) => item.id === id);
+  const chapter = Number(rawChapter || 0);
+  const validChapter = book?.chapters[chapter] !== undefined;
+  route = book && validChapter && ['book', 'read'].includes(view) ? { view, book, chapter, topic } : { view: 'home' };
+  $('#home').hidden = route.view !== 'home';
+  $('#contents').hidden = route.view !== 'book';
+  $('#reader').hidden = route.view !== 'read';
+  document.title = route.view === 'read' ? `Глава ${chapter + 1} — ${book.chapters[chapter]}` : 'Поля — тетрадка для чтения';
+  $('#download').hidden = route.view !== 'read' || book !== sourceBook || chapter !== 0;
+  $('#print-chapter').hidden = route.view !== 'read' || !sampleFor(book, chapter) || chapter === 0;
+  const brand = $('#brand');
+  brand.href = route.view === 'read' ? `#book/${book.id}/${chapter}` : '#';
+  brand.replaceChildren();
+  const mark = make('span', 'brand-mark');
+  mark.append(icon(route.view === 'read' ? 'back' : 'book'));
+  brand.append(mark, document.createTextNode(route.view === 'read' ? 'Оглавление' : 'Поля'));
+  $('#bar-context').textContent = route.view === 'home' ? 'Макет тетрадки' : route.view === 'read' ? `Глава ${chapter + 1}` : 'Мои книги';
+  window.scrollTo(0, 0);
+  if (route.view === 'home') drawBooks();
+  if (route.view === 'book') drawContents(book, chapter);
+  if (route.view === 'read') drawReader(book, chapter, topic);
+}
+
+function openTopics(book, chapter) {
+  activeBook = book;
+  activeChapter = chapter;
+  $('#topics-caption').textContent = `Глава ${chapter + 1} · ${book.chapters[chapter]}`;
+  $('#topic-input').value = topicsFor(book, chapter).map((topic) => topic.title).join('\n');
+  $('#topics-error').hidden = true;
+  $('#topics-dialog').showModal();
+}
+
+$('#search').addEventListener('input', drawBooks);
+$('#print-chapter').addEventListener('click', () => window.print());
+$('#add-book').addEventListener('click', () => $('#book-dialog').showModal());
+for (const control of document.querySelectorAll('[data-close]')) control.addEventListener('click', () => document.getElementById(control.dataset.close).close());
+$('#book-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  const title = $('#book-title').value.trim();
+  if (!title) return;
+  const book = { id: String(Date.now()), title, author: $('#book-author').value.trim(), chapters: ['Глава 1'] };
+  books.push(book);
+  save('books', books.slice(1));
+  event.target.reset();
+  $('#book-dialog').close();
+  location.hash = '#book/' + book.id;
+});
+$('#edit-topics').addEventListener('click', () => openTopics(activeBook, activeChapter));
+$('#suggest-topics').addEventListener('click', () => {
+  const suggestions = ['Главная мысль', 'Основные понятия', 'Примеры'];
+  const lines = $('#topic-input').value.split('\n').map((line) => line.trim()).filter(Boolean);
+  $('#topic-input').value = [...new Set([...lines, ...suggestions])].join('\n');
+  $('#topic-input').focus();
+});
+$('#topics-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  const before = topicsFor(activeBook, activeChapter);
+  const titles = [...new Set($('#topic-input').value.split('\n').map((line) => line.trim()).filter(Boolean))];
+  if (titles.length > 16) {
+    $('#topics-error').textContent = 'В макете можно добавить до 16 тем.';
+    $('#topics-error').hidden = false;
+    return;
+  }
+  const reserved = new Set(titles.map((title) => before.find((item) => item.title === title)?.id).filter(Boolean));
+  topicOverrides[keyFor(activeBook, activeChapter)] = titles.map((title, index) => {
+    const same = before.find((item) => item.title === title);
+    const atIndex = before[index];
+    const id = same?.id ?? (atIndex && !reserved.has(atIndex.id) ? atIndex.id : 'custom-' + Date.now() + '-' + index);
+    reserved.add(id);
+    return { id, title };
+  });
+  save('topics', topicOverrides);
+  $('#topics-dialog').close();
+  drawContents(activeBook, activeChapter);
+});
+
+const pdfBytes = Uint8Array.from(atob('NOTEBOOK_PDF'), (char) => char.charCodeAt(0));
+$('#download').href = URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' }));
+window.addEventListener('hashchange', render);
+render();
+</script>
+</body>
+</html>

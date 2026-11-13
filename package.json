@@ -1,0 +1,11 @@
+{
+  "name": "polya-reading-notebook",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.cjs",
+    "check": "node scripts/check.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}
